@@ -1,0 +1,48 @@
+Esta es una solicitud más compleja ya que implica dos escenarios distintos: el servidor DMZ (público, VirtualHosts estándar y alias de directorios) y el servidor Intranet (privacidad, autenticación de usuarios y ejecución de scripts CGI).
+
+Para que sea práctico, he diseñado un script para cada servidor que cumple con todos los requerimientos de tu guía.
+
+1. Servidor DMZ (Segona Part)
+Este script configura las dos webs (primernomdedomini.com y segonnomdedomini.org), crea la estructura de carpetas, los alias de imágenes y las páginas de error 404 personalizadas.
+
+2. Servidor Intranet (Tercera Part)
+Este script es más avanzado: configura el módulo CGI para los scripts bash, crea los usuarios con htpasswd y restringe el acceso por IP (reemplaza 192.168.1.0/24 por tu red real).
+
+3. Checklist para HTTP (DMZ e Intranet)
+Para los requerimientos específicos que mencionaba tu guía, ten presente esto:
+
+Páginas de Error: Si te piden un mensaje de error 404 personalizado, debes añadir esta línea dentro del bloque <VirtualHost>:
+
+ErrorDocument 404 /404.html (y asegúrate de que el archivo exista en el DocumentRoot).
+
+Alias de Directorios: Si te piden que /fotos apunte a una carpeta fuera de la web:
+
+Alias /fotos /ruta/fuera/de/la/web
+
+CGI (Scripts): Si te piden que los scripts funcionen, no olvides activar el módulo:
+
+sudo a2enmod cgi
+
+Y añadir Options +ExecCGI y AddHandler cgi-script .sh en la configuración del directorio.
+
+
+4. Variables Críticas (Lo que cambia seguro)
+En cualquier script o configuración manual, tendrás que localizar y sustituir estos tres bloques:
+
+Identidad del Servidor:
+
+ServerName: El dominio principal (ej: www.examen.com).
+
+ServerAlias: Otros nombres (ej: examen.com o www2.examen.com).
+
+ServerAdmin: El correo que te pida el profesor.
+
+Rutas de Archivos:
+
+DocumentRoot: La carpeta donde están los .html. Asegúrate de que la ruta sea exactamente la que pida el enunciado (ej: /var/www/html/web1).
+
+Red y Seguridad:
+
+Require ip: Cambia la IP de red (ej: 192.168.10.0/24) por la de la VLAN que te asignen.
+
+SSLCertificateFile: Si es HTTPS, asegúrate de que la ruta apunte al archivo .crt que generes.
