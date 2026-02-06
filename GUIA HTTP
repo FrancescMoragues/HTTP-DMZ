@@ -1,3 +1,37 @@
+El Escenario del Examen (Hipotético)
+IP del Servidor DMZ: 192.168.50.10
+
+Dominio 1 (Corporativo): www.empresa.net (Debe tener un alias web.empresa.net).
+
+Dominio 2 (Servicios): www.servicios.com.
+
+Restricción de Seguridad: El acceso al directorio /admin en www.servicios.com solo debe permitirse desde la IP del administrador en la LAN (192.168.1.50).
+
+HTTPS (Opcional pero probable): A veces piden habilitar SSL básico.
+
+Cambios Necesarios en tu Script
+Rutas de Logs: Apache necesita que el usuario www-data tenga permisos o que los directorios existan antes de reiniciar, si no, fallará.
+
+Seguridad por IP: Es vital en una DMZ demostrar que sabes restringir acceso.
+
+Limpieza de Sites: Es buena práctica desactivar el sitio por defecto (000-default).
+
+Si el examen es sobre una infraestructura completa (Firewall + DMZ), no olvides estos 3 puntos:
+
+Archivo /etc/hosts en el cliente: Para probar que funciona desde fuera, el cliente debe apuntar a la IP de la DMZ: 192.168.50.10 www.empresa.net www.servicios.com
+
+Reglas de Firewall (iptables/nftables): Si hay un firewall delante, debes abrir el puerto 80 hacia la IP de la DMZ: iptables -A FORWARD -p tcp --dport 80 -d 192.168.50.10 -j ACCEPT
+
+Verificación de logs en tiempo real: Si el profesor te pide demostrar que el bloqueo por IP funciona, intenta entrar a /admin desde una IP no autorizada y muéstrale el log: tail -f /var/log/apache2/servicios-error.log (verás un "client denied by server configuration").
+
+
+
+
+
+
+
+
+
 Esta es una solicitud más compleja ya que implica dos escenarios distintos: el servidor DMZ (público, VirtualHosts estándar y alias de directorios) y el servidor Intranet (privacidad, autenticación de usuarios y ejecución de scripts CGI).
 
 Para que sea práctico, he diseñado un script para cada servidor que cumple con todos los requerimientos de tu guía.
