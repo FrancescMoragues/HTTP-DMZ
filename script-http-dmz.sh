@@ -1,50 +1,60 @@
 #!/bin/bash
-# CONFIGURACIÓ SERVIDOR DMZ
+# CONFIGURACIÓ SERVIDOR DMZ - EXAMEN
 
-# 1. Instal·lació
-apt update && apt install apache2 -y
+# 1. Instal·lació i neteja
+apt update && apt install apache2 apache2-utils -y
+a2dissite 000-default.conf
 
-# 2. Definició d'aplicacions
-APPS=("www.primernomdedomini.com" "www.segonnomdedomini.org")
-EXTENSIO=("com" "org")
+# 2. Definició de dades del examen
+# APP_NAME | DOMAIN | ALIAS | IP_RESTRICTED (opcional)
+APPS=(
+    "empresa|www.empresa.net|web.empresa.net"
+    "servicios|www.servicios.com|servicios.com"
+)
 
-for i in ${!APPS[@]}; do
-    DOMAIN=${APPS[$i]}
-    NOM=$(echo $DOMAIN | cut -d'.' -f2)
+for APP in "${APPS[@]}"; do
+    # Extraure dades
+    IFS="|" read -r NOM DOMAIN ALIAS <<< "$APP"
+    
     ROOT_DIR="/var/www/$NOM"
-    IMG_DIR="/var/www/$NOM-imatges"
-    LOG_DIR="$ROOT_DIR/logs"
+    LOG_DIR="/var/log/apache2/$NOM" # Millor guardar logs en la ruta estàndard
 
     # Crear directoris
-    mkdir -p $ROOT_DIR $IMG_DIR $LOG_DIR
-
-    # Arxius HTML bàsics
-    echo "<h1>Aplicacio: $DOMAIN - Directori Arrel</h1>" > $ROOT_DIR/index.html
-    echo "<h1>Aplicacio: $DOMAIN - Directori Imatges</h1>" > $IMG_DIR/index.html
-    echo "Error en l'aplicació web $DOMAIN – fitxer no trobat" > $ROOT_DIR/404.html
+    mkdir -p $ROOT_DIR $LOG_DIR
+    
+    # Contingut de prova
+    echo "<h1>Benvingut a $DOMAIN</h1>" > $ROOT_DIR/index.html
+    echo "Pàgina no trobada en $NOM" > $ROOT_DIR/404.html
 
     # VirtualHost
     cat <<EOF > /etc/apache2/sites-available/$NOM.conf
 <VirtualHost *:80>
     ServerName $DOMAIN
-    ServerAlias $NOM.${EXTENSIO[$i]}
-    ServerAdmin admin@$DOMAIN
+    ServerAlias $ALIAS
     DocumentRoot $ROOT_DIR
 
-    Alias /imatges $IMG_DIR
-
     ErrorDocument 404 /404.html
-    ErrorLog $LOG_DIR/error.log
-    CustomLog $LOG_DIR/access.log combined
+    ErrorLog \${APACHE_LOG_DIR}/$NOM-error.log
+    CustomLog \${APACHE_LOG_DIR}/$NOM-access.log combined
 
     <Directory $ROOT_DIR>
+        Options -Indexes +FollowSymLinks
         AllowOverride None
         Require all granted
     </Directory>
+
+    # Exemple de restricció per IP (Típic de DMZ)
+    <Location /admin>
+        # Suposem que la IP del admin de la LAN és 192.168.1.50
+        Require ip 192.168.1.50
+    </Location>
 </VirtualHost>
 EOF
     a2ensite $NOM.conf
 done
 
+# 3. Permisos correctes (Importantíssim per nota)
+chown -R www-data:www-data /var/www/
 systemctl restart apache2
-echo "✅ Servidor DMZ configurat."
+
+echo "✅ Servidor DMZ configurat i protegit."
