@@ -1,3 +1,21 @@
+En tu máquina local (donde corres el script): Para que el navegador entienda los nombres, edita tu /etc/hosts:
+
+Bash
+sudo nano /etc/hosts
+Y añade esta línea: 192.168.3.84 www.primernomdedomini.com www.segonnomdedomini.org
+
+La prueba de fuego de la IP:
+
+Si entras a http://www.primernomdedomini.com/admin desde tu máquina (.3.84), te dejará entrar (aunque verás un error 404 porque la carpeta física no existe, pero no un 403 Forbidden).
+
+Si intentaras entrar desde un móvil o PC que no esté en el rango 192.168.3.x, te daría un 403 Forbidden.
+
+Si te piden usuarios: Si el profesor te pide que además de la IP pida contraseña (como en tu primer script), simplemente añade las líneas de AuthType Basic y AuthUserFile dentro del bloque <Location /admin>.
+
+Ubicación de los logs: He configurado los logs en /var/log/apache2/. Si algo falla, el primer comando que debes escribir en el examen es: tail -n 20 /var/log/apache2/empresa-error.log
+
+
+
 El Escenario del Examen (Hipotético)
 IP del Servidor DMZ: 192.168.50.10
 
